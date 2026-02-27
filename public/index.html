@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HYI560 Calendar</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="theme-dark">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <i data-lucide="calendar-days" class="logo-icon"></i>
+                <h1>HYI560</h1>
+            </div>
+
+            <button id="btn-create-event" class="btn-primary">
+                <i data-lucide="plus"></i> Create New
+            </button>
+
+            <div class="mini-calendar" id="mini-calendar">
+                <!-- Mini calendar placeholder -->
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <h3>Calendars</h3>
+                    <label class="checkbox-container">
+                        <input type="checkbox" checked data-filter="event">
+                        <span class="checkmark event-checkmark"></span>
+                        Events
+                    </label>
+                    <label class="checkbox-container">
+                        <input type="checkbox" checked data-filter="task">
+                        <span class="checkmark task-checkmark"></span>
+                        Tasks
+                    </label>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-left">
+                    <button id="btn-sidebar-toggle" class="btn-icon mobile-menu-btn" title="Menu">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <button id="btn-today" class="btn-outline">Today</button>
+                    <div class="nav-arrows">
+                        <button id="btn-prev" class="btn-icon"><i data-lucide="chevron-left"></i></button>
+                        <button id="btn-next" class="btn-icon"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                    <h2 id="current-month-year" class="current-date-display">November 2026</h2>
+                </div>
+                <div class="header-right">
+                    <div class="view-toggle">
+                        <button id="btn-view-month" class="toggle-btn active">Month</button>
+                        <button id="btn-view-week" class="toggle-btn">Week</button>
+                    </div>
+                    <button id="btn-theme-toggle" class="btn-icon" title="Toggle Theme">
+                        <i data-lucide="sun" id="icon-light-theme" class="hidden"></i>
+                        <i data-lucide="moon" id="icon-dark-theme"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="calendar-container" id="calendar-container">
+                <!-- Calendar grid / week view will be injected here by JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+
+    <!-- Mobile FAB (Floating Action Button) -->
+    <button id="btn-fab" class="btn-fab" title="Create New">
+        <i data-lucide="plus"></i>
+    </button>
+
+    <!-- Event Detail Popup (read-only, shown before editing) -->
+    <div id="detail-overlay" class="modal-overlay hidden">
+        <div class="modal-content detail-content">
+            <header class="modal-header">
+                <div class="detail-header-left">
+                    <div class="detail-type-badge" id="detail-type-badge">Event</div>
+                    <div class="detail-recurrence-badge hidden" id="detail-recurrence-badge">
+                        <i data-lucide="repeat" class="badge-icon"></i>
+                        <span id="detail-recurrence-text"></span>
+                    </div>
+                </div>
+                <div class="modal-header-actions">
+                    <button id="btn-edit-event" class="btn-outline btn-edit-action">
+                        <i data-lucide="pencil"></i> Edit
+                    </button>
+                    <button id="btn-close-detail" class="btn-icon btn-close"><i data-lucide="x"></i></button>
+                </div>
+            </header>
+            <div class="detail-body">
+                <h2 id="detail-title" class="detail-title"></h2>
+                <div id="detail-datetime" class="detail-meta-row">
+                    <i data-lucide="clock" class="detail-icon"></i>
+                    <span id="detail-datetime-text"></span>
+                </div>
+                <div id="detail-location-row" class="detail-meta-row hidden">
+                    <i data-lucide="map-pin" class="detail-icon"></i>
+                    <a id="detail-location-link" class="detail-location-link" href="#" target="_blank"></a>
+                </div>
+                <div id="detail-note-row" class="detail-meta-row hidden">
+                    <i data-lucide="align-left" class="detail-icon"></i>
+                    <p id="detail-note"></p>
+                </div>
+                <div id="detail-participants-row" class="hidden">
+                    <div class="detail-meta-row" style="margin-bottom:0.5rem">
+                        <i data-lucide="users" class="detail-icon"></i>
+                        <span style="font-weight:600">Participants</span>
+                        <span id="detail-rotate-badge" class="detail-rotate-badge hidden">
+                            <i data-lucide="shuffle" class="badge-icon-xs"></i> Auto-rotating
+                        </span>
+                    </div>
+                    <div id="detail-participants-list" class="detail-participants-list"></div>
+                </div>
+                <div id="detail-discussion-row" class="hidden">
+                    <div class="detail-meta-row" style="margin-bottom:0.5rem">
+                        <i data-lucide="message-square" class="detail-icon"></i>
+                        <span style="font-weight:600">Discussion</span>
+                    </div>
+                    <div id="detail-discussion-list" class="detail-discussion-list"
+                        style="max-height: 200px; overflow-y: auto; background: var(--bg-secondary); border-radius: 8px; padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
+                    </div>
+                    <div class="discussion-input-row" style="display: flex; gap: 8px;">
+                        <input type="text" id="detail-discussion-input" class="form-input"
+                            placeholder="Type a message...">
+                        <button type="button" id="btn-send-discussion" class="btn-primary"
+                            style="padding: 0 16px; border-radius: 8px;">Send</button>
+                    </div>
+                </div>
+                <div id="detail-attachments-row" class="hidden">
+                    <div class="detail-meta-row" style="margin-bottom:0.5rem">
+                        <i data-lucide="paperclip" class="detail-icon"></i>
+                        <span style="font-weight:600">Attachments</span>
+                    </div>
+                    <div id="detail-attachments-list" class="detail-attachments-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Modal Overlay -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3 id="modal-title">New Event</h3>
+                <button id="btn-close-modal" class="btn-icon btn-close"><i data-lucide="x"></i></button>
+            </header>
+            <form id="event-form" class="modal-form">
+                <input type="hidden" id="event-id">
+
+                <div class="form-group">
+                    <input type="text" id="event-title-input" class="form-input title-input" placeholder="Add title"
+                        required>
+                </div>
+
+                <div class="type-selector">
+                    <label class="radio-container">
+                        <input type="radio" name="event-type" value="event" checked>
+                        <span class="radio-btn">Event</span>
+                    </label>
+                    <label class="radio-container">
+                        <input type="radio" name="event-type" value="task">
+                        <span class="radio-btn">Task</span>
+                    </label>
+                </div>
+
+                <div class="form-group with-icon">
+                    <i data-lucide="clock" class="input-icon"></i>
+                    <div class="datetime-inputs" style="flex-wrap: wrap; gap: 8px;">
+                        <div style="flex-basis: 100%; display: flex; align-items: center; gap: 8px;">
+                            <input type="date" id="event-date-input" class="form-input" required title="Start Date">
+                            <span style="color: var(--text-secondary);">to</span>
+                            <input type="date" id="event-enddate-input" class="form-input" required title="End Date">
+                            <label class="checkbox-container"
+                                style="margin: 0; display: flex; align-items: center; white-space: nowrap; margin-left: 4px;">
+                                <input type="checkbox" id="event-allday-toggle">
+                                <span class="checkmark" style="position: relative; margin-right: 8px;"></span>
+                                All Day
+                            </label>
+                        </div>
+                        <div id="time-inputs-row" style="display: flex; gap: 8px; width: 100%; align-items: center;">
+                            <input type="time" id="event-time-input" class="form-input" title="Start Time">
+                            <span style="color: var(--text-secondary);">-</span>
+                            <input type="time" id="event-endtime-input" class="form-input" title="End Time">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recurrence Section -->
+                <div class="form-group with-icon align-top">
+                    <i data-lucide="repeat" class="input-icon" style="margin-top:0.6rem"></i>
+                    <div class="recurrence-section" id="recurrence-section">
+                        <!-- One-time / Recurring toggle -->
+                        <div class="recurrence-type-row">
+                            <label class="radio-container">
+                                <input type="radio" name="recurrence-type" value="one-time" checked>
+                                <span class="radio-btn">One-time</span>
+                            </label>
+                            <label class="radio-container">
+                                <input type="radio" name="recurrence-type" value="recurring">
+                                <span class="radio-btn">Recurring</span>
+                            </label>
+                        </div>
+
+                        <!-- Recurring sub-options (hidden when one-time is selected) -->
+                        <div id="recurrence-options" class="recurrence-options hidden">
+                            <!-- Frequency pills -->
+                            <div class="frequency-group">
+                                <label class="freq-radio">
+                                    <input type="radio" name="recurrence-freq" value="daily">
+                                    <span class="freq-pill">Daily</span>
+                                </label>
+                                <label class="freq-radio">
+                                    <input type="radio" name="recurrence-freq" value="weekly" checked>
+                                    <span class="freq-pill">Weekly</span>
+                                </label>
+                                <label class="freq-radio">
+                                    <input type="radio" name="recurrence-freq" value="monthly">
+                                    <span class="freq-pill">Monthly</span>
+                                </label>
+                                <label class="freq-radio">
+                                    <input type="radio" name="recurrence-freq" value="yearly">
+                                    <span class="freq-pill">Yearly</span>
+                                </label>
+                            </div>
+
+                            <!-- End type -->
+                            <div class="end-type-group">
+                                <label class="radio-container">
+                                    <input type="radio" name="recurrence-end" value="date" checked>
+                                    <span class="radio-btn radio-btn-sm">By Date</span>
+                                </label>
+                                <label class="radio-container">
+                                    <input type="radio" name="recurrence-end" value="indefinite">
+                                    <span class="radio-btn radio-btn-sm">Indefinite</span>
+                                </label>
+                            </div>
+
+                            <!-- End date (hidden when indefinite) -->
+                            <div id="recurrence-end-date-row" class="end-date-row">
+                                <label class="end-date-label">Ends on</label>
+                                <input type="date" id="recurrence-end-date" class="form-input form-input-sm">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="form-group with-icon">
+                    <i data-lucide="map-pin" class="input-icon"></i>
+                    <input type="text" id="event-location-input" class="form-input"
+                        placeholder="Add location (tap to open in Maps)">
+                </div>
+
+                <!-- Participants -->
+                <div class="form-group with-icon align-top">
+                    <i data-lucide="users" class="input-icon" style="margin-top:0.75rem"></i>
+                    <div class="participants-section" id="participants-section">
+                        <div id="participant-list"></div>
+                        <div class="add-participant-row">
+                            <input type="text" id="participant-name-input" class="form-input"
+                                placeholder="Add participant name">
+                            <button type="button" id="btn-add-participant" class="btn-add-pill">
+                                <i data-lucide="user-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auto-rotate tasks toggle (shown for recurring events with participant tasks) -->
+                <div id="auto-rotate-row" class="form-group with-icon hidden">
+                    <i data-lucide="shuffle" class="input-icon"></i>
+                    <div class="toggle-row">
+                        <div class="toggle-label-group">
+                            <span class="toggle-label">Auto-rotate tasks</span>
+                            <span class="toggle-hint">Cycle assigned tasks among participants on each occurrence</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="auto-rotate-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group with-icon align-top">
+                    <i data-lucide="align-left" class="input-icon"></i>
+                    <textarea id="event-note-input" class="form-input textarea-input"
+                        placeholder="Add description or note" rows="3"></textarea>
+                </div>
+
+                <!-- Discussion Toggle -->
+                <div id="enable-discussion-row" class="form-group with-icon">
+                    <i data-lucide="message-square" class="input-icon"></i>
+                    <div class="toggle-row">
+                        <div class="toggle-label-group">
+                            <span class="toggle-label">Enable Discussion</span>
+                            <span class="toggle-hint">Allow participants with phone numbers to text each other</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="enable-discussion-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- File Attachments -->
+                <div class="form-group with-icon align-top">
+                    <i data-lucide="paperclip" class="input-icon" style="margin-top:0.6rem"></i>
+                    <div class="attachments-section" id="attachments-section">
+                        <div id="attachment-list"></div>
+                        <label class="btn-attach" for="file-input">
+                            <i data-lucide="plus" class="attach-icon"></i>
+                            Attach a file
+                        </label>
+                        <input type="file" id="file-input" multiple class="hidden-file-input">
+                    </div>
+                </div>
+
+                <footer class="modal-footer">
+                    <button type="button" id="btn-delete-event" class="btn-text danger hidden">Delete</button>
+                    <div class="footer-actions">
+                        <button type="button" id="btn-cancel-modal" class="btn-outline">Cancel</button>
+                        <button type="submit" class="btn-primary">Save</button>
+                    </div>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-overlay" class="modal-overlay hidden">
+        <div class="modal-content confirm-content">
+            <div class="confirm-body">
+                <i data-lucide="alert-triangle" class="confirm-icon"></i>
+                <h3 id="confirm-title">Are you sure?</h3>
+                <p id="confirm-message">This action cannot be undone.</p>
+            </div>
+            <footer class="confirm-footer">
+                <button type="button" id="btn-confirm-cancel" class="btn-outline">Cancel</button>
+                <button type="button" id="btn-confirm-ok" class="btn-primary danger">Delete</button>
+            </footer>
+        </div>
+    </div>
+
+
+    <script type="module" src="js/app.js"></script>
+    <script>
+        // Initialize icons
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Android
+android/
+!android/app/src/
+!android/app/build.gradle
+!android/build.gradle
+!android/settings.gradle
+
+# iOS
+ios/
+!ios/App/App/
+!ios/App/App.xcodeproj/
+!ios/App/App.xcworkspace/
+!ios/App/Podfile
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+.github/workflows/*.yml
+public/js/secrets.js
+dist/
+build/
+*.log
