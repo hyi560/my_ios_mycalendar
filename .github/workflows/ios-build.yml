@@ -22,36 +22,33 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Add iOS Platform
+        run: |
+          npm install @capacitor/ios
+          npx cap add ios
+
+      - name: Build Web Assets
+        run: |
+          # The public folder is our build dir.
+          npx cap copy ios
+
       - name: Setup CocoaPods
         run: |
           cd ios/App
           pod install
           cd ../..
 
-      - name: Build Web Assets
-        run: |
-          # If there was a build script, run it here.
-          # For this simple calendar, the public folder is the build dir.
-          npx cap copy ios
-
       - name: Build iOS App
         run: |
           npx cap sync ios
           xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -allowProvisioningUpdates build
-        # Note: This will build the .app, but not a signed .ipa without certificates.
       
       - name: Archive build
         run: |
           xcodebuild -workspace ios/App/App.xcworkspace -scheme App -archivePath build/App.xcarchive archive -allowProvisioningUpdates
           
-      - name: Export IPA (Requires secrets)
-        if: false # Set to true only if you provide EXPORT_OPTIONS_PLIST secret
-        run: |
-          xcodebuild -exportArchive -archivePath build/App.xcarchive -exportOptionsPlist EXPORT_OPTIONS.plist -exportPath build/ipa
-
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-build-project
-          path: ios/App/
-
+          name: ios-project-archive
+          path: build/App.xcarchive

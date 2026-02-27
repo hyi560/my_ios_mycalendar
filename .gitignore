@@ -10,10 +10,7 @@ android/
 
 # iOS
 ios/
-!ios/App/App/
-!ios/App/App.xcodeproj/
-!ios/App/App.xcworkspace/
-!ios/App/Podfile
+
 
 # OS files
 .DS_Store
