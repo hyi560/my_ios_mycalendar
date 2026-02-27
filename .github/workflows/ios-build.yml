@@ -20,17 +20,16 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm install
-
-      - name: Add iOS Platform
         run: |
-          npm install @capacitor/ios
-          npx cap add ios
+          npm install
+          npm install @capacitor/ios @capacitor/cli
 
-      - name: Build Web Assets
+      - name: Add and Sync iOS Platform
         run: |
-          # The public folder is our build dir.
-          npx cap copy ios
+          # Ensure public exists (it should from checkout)
+          ls -R public
+          npx cap add ios || echo "iOS already added or failed to add"
+          npx cap sync ios
 
       - name: Setup CocoaPods
         run: |
@@ -40,7 +39,6 @@ jobs:
 
       - name: Build iOS App
         run: |
-          npx cap sync ios
           xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -allowProvisioningUpdates build
       
       - name: Archive build
