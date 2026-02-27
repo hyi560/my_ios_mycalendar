@@ -20,7 +20,8 @@ ios/
 Thumbs.db
 
 # Misc
-.github/workflows/*.yml
+!.github/
+!.github/workflows/*.yml
 public/js/secrets.js
 dist/
 build/
