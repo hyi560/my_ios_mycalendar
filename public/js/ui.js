@@ -673,28 +673,18 @@ export function generateGoogleCalendarUrl(eventData) {
 
 export function triggerEmailInvite(participant, eventData) {
     const gCalUrl = generateGoogleCalendarUrl(eventData);
-    const importUrl = generateImportUrl(eventData);
 
     const subject = encodeURIComponent(`Invitation: ${eventData.title}`);
-    const body = encodeURIComponent(`Hi ${participant.name},\nYou're invited to: ${eventData.title}\nDate: ${eventData.date}\n${eventData.location ? 'At: ' + eventData.location : ''}\n\nAdd to Google Calendar: ${gCalUrl}\n\nImport to Simple Calendar: ${importUrl}`);
+    const body = encodeURIComponent(`Hi ${participant.name},\nYou're invited to: ${eventData.title}\nDate: ${eventData.date}\n${eventData.location ? 'At: ' + eventData.location : ''}\n\nAdd to Google Calendar: ${gCalUrl}`);
 
     window.location.href = `mailto:${participant.email}?subject=${subject}&body=${body}`;
 }
 
-export function generateImportUrl(eventData) {
-    // Strip local ID and other session-specific data if needed
-    const { id, ...exportData } = eventData;
-    const json = JSON.stringify(exportData);
-    const b64 = btoa(unescape(encodeURIComponent(json)));
-    const baseUrl = window.location.origin + window.location.pathname;
-    return `${baseUrl}?import=${b64}`;
-}
 
 export function triggerSMSInvite(participant, eventData) {
     const gCalUrl = generateGoogleCalendarUrl(eventData);
-    const importUrl = generateImportUrl(eventData);
     const dateInfo = eventData.date + (eventData.endDate && eventData.endDate !== eventData.date ? ` to ${eventData.endDate}` : '');
-    const text = `Hi ${participant.name},\nYou're invited to: ${eventData.title}\nDate: ${dateInfo} ${eventData.isAllDay ? 'All Day' : (eventData.time || '')}\n${eventData.location ? 'At: ' + eventData.location : ''}\n\nImport to App: ${importUrl}\n\nGCal: ${gCalUrl}`;
+    const text = `Hi ${participant.name},\nYou're invited to: ${eventData.title}\nDate: ${dateInfo} ${eventData.isAllDay ? 'All Day' : (eventData.time || '')}\n${eventData.location ? 'At: ' + eventData.location : ''}\n\nGCal: ${gCalUrl}`;
     // Using ?body= works best across most mobile platforms, though some iOS versions preferred &body=
     window.location.href = `sms:${participant.phone}?body=${encodeURIComponent(text)}`;
 }
