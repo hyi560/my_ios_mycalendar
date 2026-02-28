@@ -19,22 +19,16 @@ jobs:
           node-version: '20'
 
       - name: Install Dependencies
-        run: |
-          npm install
-          npm install -g @capacitor/cli@8.1.0 @capacitor/core@8.1.0 @capacitor/ios@8.1.0
-
-      - name: Verify Capacitor CLI
-        run: cap --version
+        run: npm install
 
       - name: Add iOS Platform
-        run: cap add ios
+        run: npx @capacitor/cli add ios
 
       - name: Sync iOS Platform
-        run: cap sync ios
+        run: npx @capacitor/cli sync ios
 
       - name: List iOS Directory
-        run: ls -R ios
-
+        run: ls -la ios/App || echo "ios/App directory not found"
 
       - name: Setup CocoaPods
         run: |
@@ -44,14 +38,24 @@ jobs:
 
       - name: Build iOS App
         run: |
-          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -allowProvisioningUpdates build
-      
+          xcodebuild -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -allowProvisioningUpdates \
+            build
+
       - name: Archive build
         run: |
-          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -archivePath build/App.xcarchive archive -allowProvisioningUpdates
-          
+          xcodebuild -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -archivePath build/App.xcarchive \
+            -allowProvisioningUpdates \
+            archive
+
       - name: Upload Build Artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ios-project-archive
           path: build/App.xcarchive
+          if-no-files-found: warn
