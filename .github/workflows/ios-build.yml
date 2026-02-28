@@ -27,7 +27,7 @@ jobs:
       - name: Setup CocoaPods
         run: |
           cd ios/App
-          pod install
+          pod install --repo-update
           cd ../..
 
       - name: Build iOS App
