@@ -19,19 +19,22 @@ jobs:
           node-version: '20'
 
       - name: Install Dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install -g @capacitor/cli@8.1.0 @capacitor/core@8.1.0 @capacitor/ios@8.1.0
 
       - name: Verify Capacitor CLI
-        run: npx cap --version
+        run: cap --version
 
       - name: Add iOS Platform
-        run: npx cap add ios
+        run: cap add ios
 
       - name: Sync iOS Platform
-        run: npx cap sync ios
+        run: cap sync ios
 
       - name: List iOS Directory
         run: ls -R ios
+
 
       - name: Setup CocoaPods
         run: |
