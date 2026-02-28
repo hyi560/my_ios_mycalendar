@@ -8,10 +8,6 @@ android/
 !android/build.gradle
 !android/settings.gradle
 
-# iOS
-ios/
-
-
 # OS files
 .DS_Store
 Thumbs.db

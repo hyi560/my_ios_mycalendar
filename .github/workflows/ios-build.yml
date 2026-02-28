@@ -21,14 +21,8 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Add iOS Platform
-        run: npx @capacitor/cli add ios
-
       - name: Sync iOS Platform
         run: npx @capacitor/cli sync ios
-
-      - name: List iOS Directory
-        run: ls -la ios/App || echo "ios/App directory not found"
 
       - name: Setup CocoaPods
         run: |
@@ -53,9 +47,7 @@ jobs:
             archive
 
       - name: Upload Build Artifact
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ios-project-archive
           path: build/App.xcarchive
-          if-no-files-found: warn
