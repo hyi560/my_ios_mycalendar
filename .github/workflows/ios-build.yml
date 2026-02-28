@@ -17,35 +17,27 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Install Dependencies
-        run: |
-          npm install
-          npm install @capacitor/ios @capacitor/cli
+        run: npm install
 
-      - name: Diagnostic Check
-        run: |
-          ls -la
-          ls -la public
-          npx cap --version
+      - name: Verify Capacitor CLI
+        run: npx cap --version
 
-      - name: Add and Sync iOS Platform
-        run: |
-          # Try to add if not exists, then sync
-          npx cap add ios --verbose || echo "Add failed or already exists"
-          npx cap sync ios --verbose
+      - name: Add iOS Platform
+        run: npx cap add ios
+
+      - name: Sync iOS Platform
+        run: npx cap sync ios
+
+      - name: List iOS Directory
+        run: ls -R ios
 
       - name: Setup CocoaPods
         run: |
-          if [ -d "ios/App" ]; then
-            cd ios/App
-            pod install
-            cd ../..
-          else
-            echo "ios/App not found, sync likely failed"
-            exit 1
-          fi
+          cd ios/App
+          pod install
+          cd ../..
 
       - name: Build iOS App
         run: |
