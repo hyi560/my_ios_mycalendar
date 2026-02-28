@@ -24,35 +24,43 @@ jobs:
       - name: Sync iOS Platform
         run: npx @capacitor/cli sync ios
 
+      - name: List iOS structure
+        run: |
+          echo "=== ios/App contents ==="
+          ls -la ios/App/
+          echo "=== Looking for xcworkspace/xcodeproj ==="
+          find ios/App -name "*.xcworkspace" -o -name "*.xcodeproj" | head -20
+          echo "=== Listing schemes ==="
+          xcodebuild -list -project ios/App/App.xcodeproj 2>&1 || echo "Failed to list schemes from project"
+
       - name: Resolve Swift Package Dependencies
         run: |
           xcodebuild -resolvePackageDependencies \
-            -workspace ios/App/App.xcworkspace \
+            -project ios/App/App.xcodeproj \
             -scheme App
 
       - name: Build iOS App
         run: |
           xcodebuild \
-            -workspace ios/App/App.xcworkspace \
+            -project ios/App/App.xcodeproj \
             -scheme App \
             -configuration Debug \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
-            -allowProvisioningUpdates \
-            build \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO \
+            build
 
       - name: Archive build
         run: |
           xcodebuild \
-            -workspace ios/App/App.xcworkspace \
+            -project ios/App/App.xcodeproj \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
             -archivePath build/App.xcarchive \
-            archive \
             CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO
+            CODE_SIGNING_REQUIRED=NO \
+            archive
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
