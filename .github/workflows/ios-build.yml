@@ -24,14 +24,6 @@ jobs:
       - name: Sync iOS Platform
         run: npx @capacitor/cli sync ios
 
-      - name: List iOS structure
-        run: |
-          echo "=== ios/App contents ==="
-          ls -la ios/App/
-          echo "=== Looking for xcworkspace/xcodeproj ==="
-          find ios/App -name "*.xcworkspace" -o -name "*.xcodeproj" | head -20
-          echo "=== Listing schemes ==="
-          xcodebuild -list -project ios/App/App.xcodeproj 2>&1 || echo "Failed to list schemes from project"
 
       - name: Resolve Swift Package Dependencies
         run: |
