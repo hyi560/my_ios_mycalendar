@@ -24,30 +24,40 @@ jobs:
       - name: Sync iOS Platform
         run: npx @capacitor/cli sync ios
 
-      - name: Setup CocoaPods
+      - name: Resolve Swift Package Dependencies
         run: |
-          cd ios/App
-          pod install --repo-update
-          cd ../..
+          xcodebuild -resolvePackageDependencies \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App
 
       - name: Build iOS App
         run: |
-          xcodebuild -workspace ios/App/App.xcworkspace \
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
             -allowProvisioningUpdates \
-            build
+            build \
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Archive build
         run: |
-          xcodebuild -workspace ios/App/App.xcworkspace \
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
             -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
             -archivePath build/App.xcarchive \
-            -allowProvisioningUpdates \
-            archive
+            archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: ios-project-archive
           path: build/App.xcarchive
+          if-no-files-found: warn
